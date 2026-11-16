@@ -40,9 +40,10 @@ if (isset($_POST["sub"])) {
 <body>
 
     <nav class="navbar">
-        <div class="logo">Fit<span>Sync</span></div>
+        <a href="index.php" class="logo">Fit<span>Sync</span></a>
         <div class="nav-links">
-            <a href="index.php" class="nav-cta">Back to Home</a>
+            <a href="index.php" class="nav-cta">Home</a>
+            <a href="login.php" class="nav-cta">Login</a>
         </div>
     </nav>
 

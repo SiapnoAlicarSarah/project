@@ -41,6 +41,24 @@ if (isset($_POST["delete_plan"])) {
     exit;
 }
 
+/* ---------- Update plan ---------- */
+if (isset($_POST["update_plan"])) {
+    $plan_id = $_POST["plan_id"] ?? "";
+    $plan_name = trim($_POST["plan_name"] ?? "");
+    $price = $_POST["price"] ?? "";
+    $duration_days = $_POST["duration_days"] ?? "";
+    $description = trim($_POST["description"] ?? "");
+
+    if (!ctype_digit($plan_id) || $plan_name === "" || !is_numeric($price) || $price <= 0 || !ctype_digit($duration_days) || $duration_days < 1) {
+        $_SESSION["plan_message"] = "Please enter a valid plan, name, price above 0, and duration of at least 1 day.";
+    } else {
+        $_SESSION["plan_message"] = $planModel->update($plan_name, $price, (int) $duration_days, $description, (int) $plan_id);
+    }
+
+    header("Location: " . $_SERVER["PHP_SELF"]);
+    exit;
+}
+
 $plans = $planModel->getAll();
 ?>
 
@@ -128,7 +146,40 @@ $plans = $planModel->getAll();
     <button type="button" id="closeManage">Close</button>
 </dialog>
 
+<!-- Edit popup -->
+<dialog id="editDialog">
+    <h2>Edit Membership Plan</h2>
+    <form method="POST">
+        <label for="edit_plan_id">Plan:</label>
+        <select name="plan_id" id="edit_plan_id" required>
+            <option value="">Choose...</option>
+            <?php foreach ($plans as $p): ?>
+                <option value="<?= (int) $p["plan_id"] ?>"><?= htmlspecialchars($p["plan_name"]) ?></option>
+            <?php endforeach; ?>
+        </select> <br><br>
+
+        <label for="edit_plan_name">Plan Name:</label>
+        <input type="text" name="plan_name" id="edit_plan_name" required> <br><br>
+
+        <label for="edit_price">Price (₱):</label>
+        <input type="number" name="price" id="edit_price" step="0.01" min="0" required> <br><br>
+
+        <label for="edit_duration_days">Duration (days):</label>
+        <input type="number" name="duration_days" id="edit_duration_days" min="1" required> <br><br>
+
+        <label for="edit_description">Description:</label> <br>
+        <textarea name="description" id="edit_description"></textarea> <br><br>
+
+        <input type="submit" name="update_plan" value="Update Plan">
+        <button type="button" id="closeEdit">Cancel</button>
+    </form>
+</dialog>
+
 <script>
+    var editDialog = document.getElementById("editDialog");
+    document.getElementById("openEdit").onclick = function () { editDialog.showModal(); };
+    document.getElementById("closeEdit").onclick = function () { editDialog.close(); };
+
     var planDialog = document.getElementById("planDialog");
     document.getElementById("openPlan").onclick = function () { planDialog.showModal(); };
     document.getElementById("closePlan").onclick = function () { planDialog.close(); };

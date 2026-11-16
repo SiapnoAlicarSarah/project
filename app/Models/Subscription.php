@@ -354,4 +354,53 @@ class Subscription
     {
         $this->conn->prepare("DELETE FROM notification WHERE user_id = ?")->execute([$userId]);
     }
+
+    public function clientPayments($clientId)
+    {
+        $sql = "SELECT pay.*, p.plan_name FROM payment pay
+                JOIN membership m ON m.membership_id = pay.membership_id
+                JOIN membership_plan p ON p.plan_id = m.plan_id
+                WHERE pay.client_id = ?
+                ORDER BY pay.payment_id DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$clientId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /* ---------- Client records (staff/owner) ---------- */
+    public function allClients()
+    {
+        $sql = "SELECT u.user_id, u.name, u.email, c.client_id
+                FROM users u
+                JOIN client c ON c.user_id = u.user_id
+                WHERE u.role = 'client'
+                ORDER BY u.user_id DESC";
+        return $this->conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateClient($userId, $name, $email)
+    {
+        $stmt = $this->conn->prepare("UPDATE users SET name = ?, email = ? WHERE user_id = ? AND role = 'client'");
+        $stmt->execute([$name, $email, $userId]);
+        return "Client updated.";
+    }
+
+    public function deleteClient($userId)
+    {
+        $this->conn->prepare("DELETE FROM users WHERE user_id = ? AND role = 'client'")->execute([$userId]);
+        return "Client deleted.";
+    }
+
+    /* ---------- Summary counts ---------- */
+    public function counts()
+    {
+        $out = [];
+        $out["clients"] = (int) $this->conn->query("SELECT COUNT(*) FROM users WHERE role='client'")->fetchColumn();
+        $out["staff"] = (int) $this->conn->query("SELECT COUNT(*) FROM users WHERE role='staff'")->fetchColumn();
+        $out["memberships"] = (int) $this->conn->query("SELECT COUNT(*) FROM membership")->fetchColumn();
+        $out["pending"] = (int) $this->conn->query("SELECT COUNT(*) FROM membership WHERE status='pending'")->fetchColumn();
+        $out["active"] = (int) $this->conn->query("SELECT COUNT(*) FROM membership WHERE status='active'")->fetchColumn();
+        $out["expired"] = (int) $this->conn->query("SELECT COUNT(*) FROM membership WHERE status='active' AND end_date < CURDATE()")->fetchColumn();
+        return $out;
+    }
 }

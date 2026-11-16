@@ -3,7 +3,7 @@ namespace App\Models;
 use App\Database;
 use PDO;
 
-class Membership_plan {
+class Membership_plan implements Manageable {
     private $conn;
 
     public function __construct()

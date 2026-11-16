@@ -48,6 +48,7 @@ $plans = $planModel->getAll();
 
 $notifications = $sub->notifications($userId);
 $unread = $sub->unreadCount($userId);
+$payments = $sub->clientPayments($clientId);
 
 /* ---------- Membership status ---------- */
 $latest = $sub->latest($clientId);
@@ -160,9 +161,15 @@ $statusLabels = [
 <body>
 
     <nav class="navbar">
-        <div class="logo">Fit<span>Sync</span></div>
+        <a href="../index.php" class="logo">Fit<span>Sync</span></a>
+
+        <div class="nav-links">
+            <a href="../index.php" class="nav-cta">Home</a>
+        </div>
 
         <div class="nav-right">
+            <a href="account.php" class="nav-cta">Account</a>
+            <button type="button" class="nav-btn" id="openPayments">Payments</button>
             <button type="button" class="nav-btn" id="openNotif">
                 Notifications<?php if ($unread > 0): ?><span class="badge"><?= $unread ?></span><?php endif; ?>
             </button>
@@ -293,7 +300,33 @@ $statusLabels = [
         <button type="button" id="closeNotif" class="btn-cancel">Close</button>
     </dialog>
 
+    <dialog id="paymentsDialog">
+        <h2>Payment History</h2>
+        <?php if (empty($payments)): ?>
+            <p>No payments yet.</p>
+        <?php else: ?>
+            <table border="1" cellpadding="6">
+                <tr><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr>
+                <?php foreach ($payments as $pay): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($pay["plan_name"]) ?></td>
+                        <td>₱<?= number_format($pay["amount"], 2) ?></td>
+                        <td><?= htmlspecialchars($pay["payment_method"]) ?></td>
+                        <td><?= htmlspecialchars($pay["payment_status"]) ?></td>
+                        <td><?= htmlspecialchars($pay["payment_id"]) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        <?php endif; ?>
+        <br>
+        <button type="button" id="closePayments" class="btn-cancel">Close</button>
+    </dialog>
+
     <script>
+        var paymentsDialog = document.getElementById("paymentsDialog");
+        document.getElementById("openPayments").onclick = function () { paymentsDialog.showModal(); };
+        document.getElementById("closePayments").onclick = function () { paymentsDialog.close(); };
+
         var payDialog = document.getElementById("payDialog");
         document.querySelectorAll(".pay-btn").forEach(function (btn) {
             btn.onclick = function () {

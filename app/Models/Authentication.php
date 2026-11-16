@@ -2,6 +2,9 @@
 
 namespace App\Models;
 use App\Database;
+use App\Models\Client;
+use App\Models\Staff;
+
 class Authentication{
     private $conn;
     private const STAFF_CODE = "FITSYNC-STAFF-2026";
@@ -10,29 +13,21 @@ class Authentication{
         $database=new Database();
         $this->conn=$database->connection();
     }
-    public function register($name, $email, $password, $role,)
+    public function register($name, $email, $password, $role, $staffCode = "")
     {
-        $hashPass=password_hash($password,PASSWORD_DEFAULT);
-        $sql="INSERT INTO users(name, email, password, role) VALUES(?,?,?,?)";
-        $stmt=$this->conn->prepare($sql);
-        $stmt->execute([
-            $name,
-            $email,
-            $hashPass,
-            $role
-        ]); 
-        $userId = $this->conn->lastInsertId();
-        if ($role === "staff") {
-            $this->conn->prepare("INSERT INTO staff(user_id, position, hire_date) VALUES(?, 'Staff', CURDATE())")
-               ->execute([$userId]);
-            }   
-            elseif ($role === "client") 
-            {
-                $this->conn->prepare("INSERT INTO client(user_id) VALUES(?)")->execute([$userId]);
-            }
+        if ($role === "staff" && $staffCode !== self::STAFF_CODE) {
+            return "Invalid staff access code.";
+        }
+        if (!in_array($role, ["client", "staff"], true)) {
+            $role = "client";
+        }
 
-        return "Registration Success";
-}
+        $user = ($role === "staff")
+            ? new Staff($this->conn, $name, $email, $password, $role)
+            : new Client($this->conn, $name, $email, $password, $role);
+
+        return $user->register();
+    }
     
     public function login($email,$password)
     {
@@ -54,5 +49,4 @@ class Authentication{
         }
     }
 }
-
 ?>

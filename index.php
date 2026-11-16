@@ -82,7 +82,7 @@ $plans = $planModel->getAll();
 
         /* ---------- Why Train With Us ---------- */
         .why { margin-top: 32px; max-width: 900px; }
-        .why h2 { font-size: 50px; margin-bottom: 14px; }
+        .why h2 { font-size: 28px; margin-bottom: 14px; }
         .why h2 span { color: #2563eb; }
 
         .why-grid {
@@ -93,31 +93,25 @@ $plans = $planModel->getAll();
 
         .why-image { flex: 0 0 36%; }
         .why-image img {
-            width: 250%;
-            height: 500px;
+            width: 100%;
+            height: 260px;
             object-fit: cover;
             border-radius: 12px;
             box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
         }
-        .why { margin-top: 30px; max-width: 60%; }   /* was 900px, now the section uses the full width */
-
-        .why-image { flex: 0 0 30%; }                 /* image stays small */
-
         .why-list {
-            flex: none;          /* stops it from stretching */
-            width: 800px;            /* the size stays fixed */
-            margin-left: 600px;      /* this moves it to the right */
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
             border-left: 4px solid #bfdbfe;
-            padding-left: 50px;
+            padding-left: 20px;
 }
 
         .why-item {
             background: #fff;
             border-radius: 10px;
-            padding: 25px 50px;
+            padding: 12px 16px;
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
 
@@ -126,17 +120,17 @@ $plans = $planModel->getAll();
             gap: 16px;
         }
         .why-item h3 {
-    margin: 30;
-    font-size: 15px;
-    flex: 10% 10% 10%;
+    margin: 0;
+    font-size: 16px;
+    flex: 1;
 }
 
 .why-item p {
     margin: 0;
-    font-size: 12px;
+    font-size: 13px;
     color: #475569;
-    flex: 1;
-    text-align: right;
+    flex: 2;
+    text-align: left;
 }
         .why-item:hover { background: #eff6ff; }
         .why-item.active {
@@ -196,9 +190,10 @@ $plans = $planModel->getAll();
 <body>
 
     <nav class="navbar">
-        <div class="logo">Fit<span>Sync</span></div>
+        <a href="index.php" class="logo">Fit<span>Sync</span></a>
 
         <div class="nav-links">
+            <a href="index.php" class="nav-cta">Home</a>
             <a href="login.php" class="nav-cta">Login</a>
             <a href="register.php" class="nav-cta">Register</a>
         </div>
