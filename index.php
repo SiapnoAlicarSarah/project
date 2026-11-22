@@ -269,7 +269,7 @@ $plans = $planModel->getAll();
         <?php else: ?>
             <div class="program-grid">
                 <?php foreach ($plans as $plan): ?>
-                    <?php $img = ($plan["image"] ?? "") ?: "plan.png"; ?>
+                    <?php $img = ($plan["image"] ?? "") ?: "gym.png"; ?>
                     <div class="program-card" data-plan="<?= htmlspecialchars($plan["plan_name"]) ?>">
                         <img src="images/<?= htmlspecialchars($img) ?>" alt="" class="program-img">
                         <h3><?= htmlspecialchars($plan["plan_name"]) ?></h3>

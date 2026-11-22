@@ -22,7 +22,7 @@ class Subscription
         if ($id) {
             return (int) $id;
         }
-        $ins = $this->conn->prepare("INSERT INTO client (user_id) VALUES (?)");
+        $ins = $this->conn->prepare("INSERT INTO client (user_id, contact_number, address, birthdate, emergency_contact) VALUES (?, '', '', '0000-00-00', '')");
         $ins->execute([$userId]);
         return (int) $this->conn->lastInsertId();
     }
@@ -73,9 +73,12 @@ class Subscription
 
     private function notify($userId, $membershipId, $message)
     {
+        $roleStmt = $this->conn->prepare("SELECT role FROM users WHERE user_id = ?");
+        $roleStmt->execute([$userId]);
+        $role = $roleStmt->fetchColumn() ?: "client";
         $this->conn->prepare(
-            "INSERT INTO notification (user_id, membership_id, message) VALUES (?, ?, ?)"
-        )->execute([$userId, $membershipId, $message]);
+            "INSERT INTO notification (user_id, membership_id, message, role) VALUES (?, ?, ?, ?)"
+        )->execute([$userId, $membershipId, $message, $role]);
     }
 
     // removes the "new request" alerts staff and owners received for this membership
@@ -93,7 +96,7 @@ class Subscription
     // sends a request; staff approve it later
     public function subscribe($clientId, $userId, $planId, $method)
     {
-        $allowed = ["cash", "gcash", "card", "bank_transfer"];
+        $allowed = ["cash", "gcash", "bank_transfer"];
         if (!in_array($method, $allowed, true)) {
             return "Please choose a payment method.";
         }
@@ -122,6 +125,10 @@ class Subscription
             $this->conn->prepare(
                 "INSERT INTO payment (membership_id, client_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?, 'pending')"
             )->execute([$membershipId, $clientId, $plan["plan_price"], $method]);
+            $paymentId = (int) $this->conn->lastInsertId();
+            $referenceNo = "FS-" . date("Ymd") . "-" . strtoupper(substr(md5("ref-" . $paymentId), 0, 6));
+            $this->conn->prepare("UPDATE payment SET reference_no = ? WHERE payment_id = ?")
+                ->execute([$referenceNo, $paymentId]);
 
             // tell the client
             $this->notify(
@@ -378,7 +385,36 @@ class Subscription
         return $this->conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateClient($userId, $name, $email)
+    /* ---------- Staff approval (owner) ---------- */
+public function pendingStaff()
+{
+    $sql = "SELECT u.user_id, u.name, u.email, s.staff_id, s.status
+            FROM users u JOIN staff s ON s.user_id = u.user_id
+            WHERE s.status = 'pending' ORDER BY u.user_id DESC";
+    return $this->conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function allStaff()
+{
+    $sql = "SELECT u.user_id, u.name, u.email, s.staff_id, s.status, s.position, s.hire_date
+            FROM users u JOIN staff s ON s.user_id = u.user_id
+            ORDER BY u.user_id DESC";
+    return $this->conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function approveStaff($userId)
+{
+    $this->conn->prepare("UPDATE staff SET status = 'approved' WHERE user_id = ?")->execute([$userId]);
+    return "Staff approved.";
+}
+
+public function rejectStaff($userId)
+{
+    $this->conn->prepare("UPDATE staff SET status = 'rejected' WHERE user_id = ?")->execute([$userId]);
+    return "Staff rejected.";
+}
+
+public function updateClient($userId, $name, $email)
     {
         $stmt = $this->conn->prepare("UPDATE users SET name = ?, email = ? WHERE user_id = ? AND role = 'client'");
         $stmt->execute([$name, $email, $userId]);

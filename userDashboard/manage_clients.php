@@ -25,8 +25,8 @@ if (isset($_POST["delete_client"])) {
 }
 $clients = $sub->allClients();
 ?>
-<dialog id="clientsDialog">
-    <h2>Manage Clients</h2>
+<section class="card" id="clients">
+    <div class="card-head"><div><h2>Clients</h2><p class="muted">Manage client accounts.</p></div></div>
     <?php if ($clientMessage !== ""): ?>
         <p><?= htmlspecialchars($clientMessage) ?></p>
     <?php endif; ?>
@@ -56,15 +56,4 @@ $clients = $sub->allClients();
             <?php endforeach; ?>
         </table>
     <?php endif; ?>
-    <br>
-    <button type="button" id="closeClients" class="btn-cancel">Close</button>
-</dialog>
-<script>
-    var clientsDialog = document.getElementById("clientsDialog");
-    if (document.getElementById("openClients")) {
-        document.getElementById("openClients").onclick = function () { clientsDialog.showModal(); };
-    }
-    if (document.getElementById("closeClients")) {
-        document.getElementById("closeClients").onclick = function () { clientsDialog.close(); };
-    }
-</script>
+</section>

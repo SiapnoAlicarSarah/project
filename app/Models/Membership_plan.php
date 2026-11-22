@@ -21,7 +21,7 @@ class Membership_plan implements Manageable {
     }
 
     public function insert($plan_name,$price,$duration_days,$description="",$image=null){
-        $sql="INSERT INTO membership_plan(plan_name,plan_price,duration_days,description,image) VALUES(?,?,?,?,?)";
+        $sql="INSERT INTO membership_plan(plan_name,plan_price,duration_days,description,image,is_active) VALUES(?,?,?,?,?,1)";
         $stmt=$this->conn->prepare($sql);
         $stmt->execute([
             $plan_name,$price,$duration_days,$description,$image

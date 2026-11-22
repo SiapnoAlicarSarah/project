@@ -14,7 +14,6 @@ $planModel = new Membership_plan();
 $message = $_SESSION["plan_message"] ?? "";
 unset($_SESSION["plan_message"]);
 
-/* ---------- Update plan ---------- */
 if (isset($_POST["update_plan"])) {
     $plan_id = (int) ($_POST["plan_id"] ?? 0);
     $plan_name = trim($_POST["plan_name"] ?? "");
@@ -34,6 +33,7 @@ if (isset($_POST["update_plan"])) {
 $editId = isset($_GET["edit"]) ? (int) $_GET["edit"] : 0;
 $editPlan = $editId > 0 ? $planModel->ViewbyId($editId) : null;
 $plans = $planModel->getAll();
+$dashboard = $_SESSION["role"] === "owner" ? "ownerDashboard.php" : "staffDashboard.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,71 +42,70 @@ $plans = $planModel->getAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Plan - FitSync</title>
     <link rel="stylesheet" href="../assets/style.css">
-    <style>
-        .edit-wrap { max-width: 720px; margin: 0 auto; }
-        .plan-list { margin-top: 24px; }
-        .plan-list a { color: #2563eb; font-weight: 600; }
-    </style>
 </head>
-<body>
-    <nav class="navbar">
+<body class="app-body">
+    <aside class="sidebar">
         <a href="../index.php" class="logo">Fit<span>Sync</span></a>
-        <div class="nav-links">
-            <a href="../index.php" class="nav-cta">Home</a>
-            <a href="<?= $_SESSION["role"] === "owner" ? "ownerDashboard.php" : "staffDashboard.php" ?>" class="nav-cta">Dashboard</a>
-        </div>
-        <div class="nav-right">
+        <nav class="side-nav">
+            <a href="<?= $dashboard ?>">Dashboard</a>
+            <a href="<?= $dashboard ?>#plans">Membership Plans</a>
+            <a href="#" class="active">Edit Plan</a>
+        </nav>
+        <div class="side-foot">
             <a href="account.php" class="nav-cta">Account</a>
             <a href="../logout.php" class="nav-cta">Logout</a>
         </div>
-    </nav>
+    </aside>
 
-    <?php if ($message !== ""): ?>
-        <div class="flash"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
-
-    <div class="edit-wrap">
-        <h1>Edit Membership Plan</h1>
-
-        <?php if ($editPlan): ?>
-            <div class="card">
-                <h2>Editing: <?= htmlspecialchars($editPlan["plan_name"]) ?></h2>
-                <form method="POST">
-                    <input type="hidden" name="plan_id" value="<?= (int) $editPlan["plan_id"] ?>">
-                    <label>Plan Name:</label>
-                    <input type="text" name="plan_name" value="<?= htmlspecialchars($editPlan["plan_name"]) ?>" required>
-                    <label>Price (₱):</label>
-                    <input type="number" name="price" step="0.01" min="0" value="<?= htmlspecialchars($editPlan["plan_price"]) ?>" required>
-                    <label>Duration (days):</label>
-                    <input type="number" name="duration_days" min="1" value="<?= (int) $editPlan["duration_days"] ?>" required>
-                    <label>Description:</label>
-                    <textarea name="description"><?= htmlspecialchars($editPlan["description"] ?? "") ?></textarea>
-                    <button type="submit" name="update_plan">Update Plan</button>
-                    <a href="edit_plan.php" class="btn-cancel" style="text-align:center; text-decoration:none; display:inline-block;">Cancel</a>
-                </form>
+    <main class="app-main">
+        <header class="app-topbar">
+            <div>
+                <h1>Edit Membership Plan</h1>
+                <p class="muted">Update plan details and pricing.</p>
             </div>
-        <?php else: ?>
-            <p>Select a plan to edit.</p>
-        <?php endif; ?>
+        </header>
 
-        <div class="card plan-list">
-            <h2>Available Plans</h2>
-            <?php if (empty($plans)): ?>
-                <p class="empty">No plans yet.</p>
-            <?php else: ?>
-                <table>
-                    <tr><th>Plan</th><th>Price</th><th>Duration</th><th>Action</th></tr>
-                    <?php foreach ($plans as $p): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($p["plan_name"]) ?></td>
-                            <td>₱<?= number_format($p["plan_price"], 2) ?></td>
-                            <td><?= (int) $p["duration_days"] ?> days</td>
-                            <td><a href="edit_plan.php?edit=<?= (int) $p["plan_id"] ?>">Edit</a></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </table>
+        <?php if ($message !== ""): ?><div class="flash"><?= htmlspecialchars($message) ?></div><?php endif; ?>
+
+        <div class="account-grid">
+            <?php if ($editPlan): ?>
+                <section class="card">
+                    <div class="card-head"><div><h2>Editing: <?= htmlspecialchars($editPlan["plan_name"]) ?></h2><p class="muted">Save changes to update this plan.</p></div></div>
+                    <form method="POST">
+                        <input type="hidden" name="plan_id" value="<?= (int) $editPlan["plan_id"] ?>">
+                        <label>Plan Name:</label>
+                        <input type="text" name="plan_name" value="<?= htmlspecialchars($editPlan["plan_name"]) ?>" required>
+                        <label>Price (₱):</label>
+                        <input type="number" name="price" step="0.01" min="0" value="<?= htmlspecialchars($editPlan["plan_price"]) ?>" required>
+                        <label>Duration (days):</label>
+                        <input type="number" name="duration_days" min="1" value="<?= (int) $editPlan["duration_days"] ?>" required>
+                        <label>Description:</label>
+                        <textarea name="description"><?= htmlspecialchars($editPlan["description"] ?? "") ?></textarea>
+                        <button type="submit" name="update_plan">Update Plan</button>
+                        <a href="edit_plan.php" class="btn-cancel">Cancel</a>
+                    </form>
+                </section>
             <?php endif; ?>
+
+            <section class="card">
+                <div class="card-head"><div><h2>Available Plans</h2><p class="muted">Select a plan to edit.</p></div></div>
+                <?php if (empty($plans)): ?>
+                    <p class="empty">No plans yet.</p>
+                <?php else: ?>
+                    <div class="table-wrap"><table>
+                        <tr><th>Plan</th><th>Price</th><th>Duration</th><th>Action</th></tr>
+                        <?php foreach ($plans as $p): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($p["plan_name"]) ?></td>
+                                <td>₱<?= number_format($p["plan_price"], 2) ?></td>
+                                <td><?= (int) $p["duration_days"] ?> days</td>
+                                <td><a href="edit_plan.php?edit=<?= (int) $p["plan_id"] ?>" class="btn-sm btn-secondary">Edit</a></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table></div>
+                <?php endif; ?>
+            </section>
         </div>
-    </div>
+    </main>
 </body>
 </html>

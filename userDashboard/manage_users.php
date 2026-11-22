@@ -1,8 +1,8 @@
 <?php $today = date("Y-m-d"); ?>
 
 <!-- Manage User Plans popup -->
-<dialog id="userPlansDialog">
-    <h2>Manage User Plans</h2>
+<section class="card" id="memberships">
+    <div class="card-head"><div><h2>Memberships</h2><p class="muted">Review and manage client membership requests.</p></div></div>
 
     <div class="filters">
         <button type="button" class="filter-btn" data-filter="all">All</button>
@@ -75,20 +75,14 @@
         <?php endif; ?>
     </table>
 
-    <br>
-    <button type="button" id="closeUserPlans" class="btn-cancel">Close</button>
-</dialog>
+</section>
 
 <script>
-    var userPlansDialog = document.getElementById("userPlansDialog");
-    document.getElementById("openUserPlans").onclick = function () { userPlansDialog.showModal(); };
-    document.getElementById("closeUserPlans").onclick = function () { userPlansDialog.close(); };
-
     // filter buttons
     document.querySelectorAll(".filter-btn").forEach(function (btn) {
         btn.onclick = function () {
             var f = btn.dataset.filter;
-            document.querySelectorAll("#userPlansDialog tr[data-status]").forEach(function (row) {
+            document.querySelectorAll("#memberships tr[data-status]").forEach(function (row) {
                 var s = row.dataset.status;
                 var show = (f === "all") ||
                            (f === "active" && (s === "active" || s === "upcoming")) ||
